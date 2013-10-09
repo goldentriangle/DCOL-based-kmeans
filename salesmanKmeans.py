@@ -1,11 +1,12 @@
-#!/usr/bin/env python
-
-""" Traveling salesman problem solved using Simulated Annealing.
+""" 
+Author: Kai Wang
+Email: kai.wang.magic@gmail.com
 """
 from scipy import *
 from pylab import *
 from sys import exit
 from math import fabs
+from random import random
 import sys
 
 def Distance(R1, R2):
@@ -55,6 +56,9 @@ def Plot(city, R, dist):
     plot(Pt[:,0], Pt[:,1], '-o')
     show()
 
+'''
+Traveling salesman problem solved using Simulated Annealing.
+'''
 def pathUpdate(R):
     ncity = 100        # Number of cities to visit
     maxTsteps = 100    # Temperature is lowered not more than maxTsteps
@@ -166,10 +170,13 @@ def isStable(prepath, path):
             return False
     return True                 
 
+
+def dataGen(nGene, nFeature):
+    dataset= [[random() for j in range(nFeature)] for i in range(nGene)]
+    return dataset
 '''
 
 '''            
- 
 def cluster(dataset, nCluster, maxIter):
     size= len(dataset)          #number of genes
     nfeatures= len(dataset[0])  #number of features
@@ -213,18 +220,25 @@ def cluster(dataset, nCluster, maxIter):
             path[minCluster]= pathUpdate(cluster[minCluster])                
     return cluster
     
+'''
+dataPath and maxIter are optional
+if no dataPath provided, generate random data
+'''  
 if __name__=='__main__':
-    if len(sys.argv)< 3:
-        print 'Usage: salesmanKmeans dataPath k [maxIter]'
+    if len(sys.argv)< 2:
+        print 'Usage: salesmanKmeans nCluster [dataPath] [maxIter]'
         exit(1)
-    fname= sys.argv[1]
+        
+    if len(sys.argv)<3:
+        dataset= dataGen(nGene, nFreature)
+    else:    
+        dataset= readAll(argv[1])       #assume each line represents a gene
+        
     if len(sys.argv) ==4:
         maxIter= sys.argv[3]
     else:
         maxIter= 2000       
     
-    #assume each line represents a gene
-    dataset= readAll(argv[1])
     cluster(dataset)
     
 
