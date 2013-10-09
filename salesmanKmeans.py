@@ -59,8 +59,8 @@ def Plot(city, R, dist):
 '''
 Traveling salesman problem solved using Simulated Annealing.
 '''
-def pathUpdate(R):
-    ncity = 100        # Number of cities to visit
+def pathUpdate(R, ncity):
+    #ncity = 100        # Number of cities to visit
     maxTsteps = 100    # Temperature is lowered not more than maxTsteps
     Tstart = 0.2       # Starting temperature - has to be high enough
     fCool = 0.9        # Factor to multiply temperature at each cooling step
@@ -83,7 +83,7 @@ def pathUpdate(R):
     T = Tstart # temperature
 
 
-    
+    print 'nct', nct
     for t in range(maxTsteps):  # Over temperature
 
         accepted = 0
@@ -91,12 +91,16 @@ def pathUpdate(R):
             
             while True: # Will find two random cities sufficiently close by
                 # Two cities n[0] and n[1] are choosen at random
+                
+                #print '------------ '
                 n[0] = int((nct)*rand())     # select one city
                 n[1] = int((nct-1)*rand())   # select another city, but not the same
                 if (n[1] >= n[0]): n[1] += 1   #
                 if (n[1] < n[0]): (n[0],n[1]) = (n[1],n[0]) # swap, because it must be: n[0]<n[1]
                 nn = (n[0]+nct -n[1]-1) % nct  # number of cities not on the segment n[0]..n[1]
-                if nn>=3: break
+                if nn>=3: 
+                    #print '*'*10
+                    break
         
             # We want to have one index before and one after the two cities
             # The order hence is [n2,n0,n1,n3]
@@ -136,7 +140,7 @@ def pathUpdate(R):
             break  # If the path does not want to change any more, we can stop
 
     print city
-    print "done"
+    print "path computed"
     return city
 
 # parameters: path of data file, seperator between gene features
@@ -158,18 +162,19 @@ def calDistance(path, gene):
     return s
 
 def outputCluster(cluster):
-    f= open('clusters.txt', 'w')
+    #f= open('clusters.txt', 'w')
     for i in range(len(cluster)):
-        if len(cluster[i])>0:
-            f.write('%d\n'%(i))
-            for j in range(len(cluster[0])):
-                
+        print '%d\n'%(i)
+        nFeatures= len(cluster[i])
+        for j in range(len(cluster[i][0])):
+            print ','.join([ str(cluster[i][k][j]) for k in range(nFeatures)])
+            print '\n'
+
 def isStable(prepath, path):
     for i in range(len(path)):
         if prepath[i]!= path[i]:
             return False
     return True                 
-
 
 def dataGen(nGene, nFeature):
     dataset= [[random() for j in range(nFeature)] for i in range(nGene)]
@@ -180,7 +185,8 @@ def dataGen(nGene, nFeature):
 def cluster(dataset, nCluster, maxIter):
     size= len(dataset)          #number of genes
     nfeatures= len(dataset[0])  #number of features
-    if nCluster> size:
+    if nCluster > size:
+        print nCluster, size
         print 'datasize less than number of clusters'
         exit(1)
         
@@ -191,12 +197,12 @@ def cluster(dataset, nCluster, maxIter):
         ind= int (random()* len(dataset))
         gene= dataset[ind]
         del dataset[ind]
-        cluster[i]= [[gene[j]] for j in len(gene) ]
+        cluster[i]= [[gene[j]] for j in range(len(gene))]
     
     prepath=[]
     path=[]
     for i in range(nCluster):
-        path.append(pathUpdate(cluster[i]))
+        path.append(pathUpdate(cluster[i], nfeatures))
         prepath=[j for j in range(nfeatures)]  
 
     iloop= 0              
@@ -209,7 +215,7 @@ def cluster(dataset, nCluster, maxIter):
                 if dist< minDist:
                     minDist= dist
                     minCluster= i
-            [cluster[minCluster][j].append( gene[j]) for j in len(gene)]       #update cluster
+            [cluster[minCluster][j].append( gene[j]) for j in range(len(gene))]       #update cluster
         iloop= iloop+1
         print 'iteration %d\n'%(iloop)
         
@@ -217,7 +223,7 @@ def cluster(dataset, nCluster, maxIter):
             break
         else:
             prepath= path
-            path[minCluster]= pathUpdate(cluster[minCluster])                
+            path[minCluster]= pathUpdate(cluster[minCluster], nfeatures)                
     return cluster
     
 '''
@@ -230,16 +236,20 @@ if __name__=='__main__':
         exit(1)
         
     if len(sys.argv)<3:
-        dataset= dataGen(nGene, nFreature)
+        # only one argument offered
+        dataset= dataGen(16, 30)
+        print 'data:\n', dataset
     else:    
         dataset= readAll(argv[1])       #assume each line represents a gene
         
     if len(sys.argv) ==4:
-        maxIter= sys.argv[3]
+        maxIter= int(sys.argv[3])
     else:
-        maxIter= 2000       
-    
-    cluster(dataset)
+        maxIter= 200       
+    ncluster= int(sys.argv[1])
+    c= cluster(dataset,ncluster, maxIter)
+    print c
+    outputCluster(c)
     
 
     
