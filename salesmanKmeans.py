@@ -8,6 +8,7 @@ from sys import exit
 from math import fabs
 from random import random
 import sys
+import pprint
 
 def Distance(R1, R2):
 	if len(R1)!=len(R2):
@@ -161,17 +162,26 @@ def calDistance(path, gene):
         s = s+ fabs(gene[i]-gene[i-1])            
     return s
 
-def outputCluster(cluster):
-    #f= open('clusters.txt', 'w')
+def outputCluster(cluster, path):
+    f= open('clusters.txt', 'w')
     for i in range(len(cluster)):
         print '%d\n'%(i)
+        print path[i]
+        f.write('%d\n'%(i))
+        
         nFeatures= len(cluster[i])
         for j in range(len(cluster[i][0])):
-            print ','.join([ str(cluster[i][k][j]) for k in range(nFeatures)])
-            print '\n'
-
+            gene= ','.join([ str(cluster[i][k][j]) for k in range(nFeatures)])
+            print '%s\n'%(gene)
+            f.write('%s\n'%(gene))
+    f.close()
+    
 def isStable(prepath, path):
+    pp = pprint.PrettyPrinter(indent=4)
+    print 'check stable:',len(path), len(prepath)
     for i in range(len(path)):
+        pp.pprint(path[i])
+        pp.pprint(prepath[i])
         if prepath[i]!= path[i]:
             return False
     return True                 
@@ -183,6 +193,8 @@ def dataGen(nGene, nFeature):
 
 '''            
 def cluster(dataset, nCluster, maxIter):
+    pp = pprint.PrettyPrinter(indent=4)
+    
     size= len(dataset)          #number of genes
     nfeatures= len(dataset[0])  #number of features
     if nCluster > size:
@@ -195,36 +207,45 @@ def cluster(dataset, nCluster, maxIter):
     # pick up k genes randomly to init each cluster
     for i in range(nCluster):
         ind= int (random()* len(dataset))
+        print ind
         gene= dataset[ind]
         del dataset[ind]
         cluster[i]= [[gene[j]] for j in range(len(gene))]
+    print 'initial cluster:\n'
+    pp.pprint ( cluster)
     
     prepath=[]
     path=[]
     for i in range(nCluster):
         path.append(pathUpdate(cluster[i], nfeatures))
-        prepath=[j for j in range(nfeatures)]  
-
+        prepath.append([])
+    pp.pprint( path)
+    pp.pprint( prepath)
+    
     iloop= 0              
     while True:        
-        minDist= float('inf')
-        minCluster= 0  
         for gene in dataset:
+            minDist= float('inf')
+            minCluster= 0  
             for i in range(nCluster):
+                #pp.pprint(path[i])
                 dist= calDistance(path[i], gene)
                 if dist< minDist:
                     minDist= dist
                     minCluster= i
             [cluster[minCluster][j].append( gene[j]) for j in range(len(gene))]       #update cluster
+                   
         iloop= iloop+1
         print 'iteration %d\n'%(iloop)
         
-        if isStable(path, prepath) or iloop> maxIter:
+        prepath= path
+        path=[ pathUpdate(cluster[i], nfeatures) for i in range(nCluster) ]
+                
+        if isStable(path, prepath) or iloop> maxIter:     
+            print 'break'
             break
-        else:
-            prepath= path
-            path[minCluster]= pathUpdate(cluster[minCluster], nfeatures)                
-    return cluster
+                        
+    return [cluster, path]
     
 '''
 dataPath and maxIter are optional
@@ -237,7 +258,7 @@ if __name__=='__main__':
         
     if len(sys.argv)<3:
         # only one argument offered
-        dataset= dataGen(16, 30)
+        dataset= dataGen(100, 10)
         print 'data:\n', dataset
     else:    
         dataset= readAll(argv[1])       #assume each line represents a gene
@@ -245,11 +266,11 @@ if __name__=='__main__':
     if len(sys.argv) ==4:
         maxIter= int(sys.argv[3])
     else:
-        maxIter= 200       
+        maxIter= 6       
     ncluster= int(sys.argv[1])
-    c= cluster(dataset,ncluster, maxIter)
-    print c
-    outputCluster(c)
+    [c, p] = cluster(dataset,ncluster, maxIter)
+    outputCluster(c, p)
+    
     
 
     
