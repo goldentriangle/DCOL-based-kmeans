@@ -2,6 +2,9 @@
 Usage: Compute K-Means clusters regarding to Distance based on Conditional Ordered List
 Author: Kai Wang
 Email: kai.wang.magic@gmail.com
+Reference: 
+Hierarchical Clustering of High-Throughput Expression Data Based on General Dependencies
+http://www.ncbi.nlm.nih.gov/pubmed/23959632
 """
 from scipy import *
 from pylab import *
