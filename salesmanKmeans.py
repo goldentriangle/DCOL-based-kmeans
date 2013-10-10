@@ -1,4 +1,5 @@
 """ 
+Usage: Compute K-Means clusters regarding to Distance based on Conditional Ordered List
 Author: Kai Wang
 Email: kai.wang.magic@gmail.com
 """
@@ -165,23 +166,23 @@ def calDistance(path, gene):
 def outputCluster(cluster, path):
     f= open('clusters.txt', 'w')
     for i in range(len(cluster)):
-        print '%d\n'%(i)
+        print 'cluster %d contains %d members\n'%(i, len(cluster[i][0]))
         print path[i]
-        f.write('%d\n'%(i))
+        f.write('%d'%(i))
         
         nFeatures= len(cluster[i])
         for j in range(len(cluster[i][0])):
             gene= ','.join([ str(cluster[i][k][j]) for k in range(nFeatures)])
-            print '%s\n'%(gene)
-            f.write('%s\n'%(gene))
+            print '%s'%(gene)
+            f.write('%s'%(gene))
     f.close()
     
 def isStable(prepath, path):
     pp = pprint.PrettyPrinter(indent=4)
     print 'check stable:',len(path), len(prepath)
     for i in range(len(path)):
-        pp.pprint(path[i])
-        pp.pprint(prepath[i])
+        print 'new', pp.pprint(path[i])
+        print 'old', pp.pprint(prepath[i])
         if prepath[i]!= path[i]:
             return False
     return True                 
@@ -209,21 +210,21 @@ def cluster(dataset, nCluster, maxIter):
         ind= int (random()* len(dataset))
         print ind
         gene= dataset[ind]
-        del dataset[ind]
-        cluster[i]= [[gene[j]] for j in range(len(gene))]
+        cluster[i]= [[gene[j]] for j in range(nfeatures)]
     print 'initial cluster:\n'
     pp.pprint ( cluster)
     
-    prepath=[]
-    path=[]
-    for i in range(nCluster):
-        path.append(pathUpdate(cluster[i], nfeatures))
-        prepath.append([])
-    pp.pprint( path)
-    pp.pprint( prepath)
+    prepath=[[] for i in range(nCluster)]
+    path=[pathUpdate(cluster[i], nfeatures) for i in range(nCluster)]       #initialize paths
+
+    print 'new path', pp.pprint( path)
+    print 'former path', pp.pprint( prepath)
     
     iloop= 0              
-    while True:        
+    while True:  
+        for i in range(nCluster):
+            cluster[i]= [[] for j in range(nfeatures)]                          #clear cluster 
+                 
         for pnt_i, gene in enumerate(dataset):
             minDist= float('inf')
             minCluster= 0  
@@ -237,7 +238,7 @@ def cluster(dataset, nCluster, maxIter):
                     minDist= dist
                     minCluster= i
                 
-            [cluster[minCluster][j].append( gene[j]) for j in range(len(gene))]       #update cluster
+            [cluster[minCluster][j].append( gene[j]) for j in range(nfeatures)]       #update cluster
                    
         iloop= iloop+1
         print 'iteration %d\n'%(iloop)
