@@ -263,7 +263,7 @@ if __name__=='__main__':
         dataset= dataGen(50, 10)
         #print 'data:\n', dataset
     else:    
-        dataset= readAll(argv[1])       #assume each line represents a gene
+        dataset= readAll(argv[1], ',')       #assume each line represents a gene
         
     if len(sys.argv) ==4:
         maxIter= int(sys.argv[3])
