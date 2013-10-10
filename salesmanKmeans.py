@@ -135,7 +135,7 @@ def pathUpdate(R, ncity):
             if accepted > maxAccepted: break
 
             
-        print "T=%10.5f , distance= %10.5f , accepted steps= %d" %(T, dist, accepted)
+        #print "T=%10.5f , distance= %10.5f , accepted steps= %d" %(T, dist, accepted)
         T *= fCool             # The system is cooled down
         if accepted == 0: 
             break  # If the path does not want to change any more, we can stop
@@ -159,7 +159,7 @@ def calDistance(path, gene):
     for i, pos in enumerate(path):
         if i==0:
             continue
-        s = s+ fabs(gene[i]-gene[i-1])            
+        s = s+ fabs(gene[path[i]]-gene[path[i-1]])            
     return s
 
 def outputCluster(cluster, path):
@@ -224,15 +224,19 @@ def cluster(dataset, nCluster, maxIter):
     
     iloop= 0              
     while True:        
-        for gene in dataset:
+        for pnt_i, gene in enumerate(dataset):
             minDist= float('inf')
             minCluster= 0  
+            print '*'*20
+            print 'point %d'%(pnt_i)
             for i in range(nCluster):
                 #pp.pprint(path[i])
                 dist= calDistance(path[i], gene)
+                print dist, minDist
                 if dist< minDist:
                     minDist= dist
                     minCluster= i
+                
             [cluster[minCluster][j].append( gene[j]) for j in range(len(gene))]       #update cluster
                    
         iloop= iloop+1
@@ -258,7 +262,7 @@ if __name__=='__main__':
         
     if len(sys.argv)<3:
         # only one argument offered
-        dataset= dataGen(100, 10)
+        dataset= dataGen(50, 10)
         print 'data:\n', dataset
     else:    
         dataset= readAll(argv[1])       #assume each line represents a gene
@@ -266,7 +270,7 @@ if __name__=='__main__':
     if len(sys.argv) ==4:
         maxIter= int(sys.argv[3])
     else:
-        maxIter= 6       
+        maxIter= 1       
     ncluster= int(sys.argv[1])
     [c, p] = cluster(dataset,ncluster, maxIter)
     outputCluster(c, p)
