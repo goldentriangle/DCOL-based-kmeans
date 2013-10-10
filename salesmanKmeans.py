@@ -85,7 +85,7 @@ def pathUpdate(R, ncity):
     T = Tstart # temperature
 
 
-    print 'nct', nct
+    #print 'nct', nct
     for t in range(maxTsteps):  # Over temperature
 
         accepted = 0
@@ -136,7 +136,7 @@ def pathUpdate(R, ncity):
             if accepted > maxAccepted: break
 
             
-        #print "T=%10.5f , distance= %10.5f , accepted steps= %d" %(T, dist, accepted)
+        print "T=%10.5f , distance= %10.5f , accepted steps= %d" %(T, dist, accepted)
         T *= fCool             # The system is cooled down
         if accepted == 0: 
             break  # If the path does not want to change any more, we can stop
@@ -168,13 +168,13 @@ def outputCluster(cluster, path):
     for i in range(len(cluster)):
         print 'cluster %d contains %d members\n'%(i, len(cluster[i][0]))
         print path[i]
-        f.write('%d'%(i))
+        f.write('%d\n'%(i))
         
         nFeatures= len(cluster[i])
         for j in range(len(cluster[i][0])):
             gene= ','.join([ str(cluster[i][k][j]) for k in range(nFeatures)])
             print '%s'%(gene)
-            f.write('%s'%(gene))
+            f.write('%s\n'%(gene))
     f.close()
     
 def isStable(prepath, path):
@@ -208,11 +208,10 @@ def cluster(dataset, nCluster, maxIter):
     # pick up k genes randomly to init each cluster
     for i in range(nCluster):
         ind= int (random()* len(dataset))
-        print ind
+        #print ind
         gene= dataset[ind]
         cluster[i]= [[gene[j]] for j in range(nfeatures)]
-    print 'initial cluster:\n'
-    pp.pprint ( cluster)
+    #print 'initial cluster:\n',pp.pprint ( cluster)
     
     prepath=[[] for i in range(nCluster)]
     path=[pathUpdate(cluster[i], nfeatures) for i in range(nCluster)]       #initialize paths
@@ -228,12 +227,11 @@ def cluster(dataset, nCluster, maxIter):
         for pnt_i, gene in enumerate(dataset):
             minDist= float('inf')
             minCluster= 0  
-            print '*'*20
-            print 'point %d'%(pnt_i)
+            #print '*'*20
+            #print 'point %d'%(pnt_i)
             for i in range(nCluster):
-                #pp.pprint(path[i])
                 dist= calDistance(path[i], gene)
-                print dist, minDist
+                #print dist, minDist
                 if dist< minDist:
                     minDist= dist
                     minCluster= i
@@ -247,7 +245,6 @@ def cluster(dataset, nCluster, maxIter):
         path=[ pathUpdate(cluster[i], nfeatures) for i in range(nCluster) ]
                 
         if isStable(path, prepath) or iloop> maxIter:     
-            print 'break'
             break
                         
     return [cluster, path]
@@ -264,14 +261,14 @@ if __name__=='__main__':
     if len(sys.argv)<3:
         # only one argument offered
         dataset= dataGen(50, 10)
-        print 'data:\n', dataset
+        #print 'data:\n', dataset
     else:    
         dataset= readAll(argv[1])       #assume each line represents a gene
         
     if len(sys.argv) ==4:
         maxIter= int(sys.argv[3])
     else:
-        maxIter= 1       
+        maxIter= 1                      #default of maxIter set to 1 for testing purpose
     ncluster= int(sys.argv[1])
     [c, p] = cluster(dataset,ncluster, maxIter)
     outputCluster(c, p)
