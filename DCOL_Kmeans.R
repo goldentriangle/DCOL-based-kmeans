@@ -1,6 +1,6 @@
 #implementation of DCOL-based kmeans clustering
 #contact: kai.wang.magic@gmail.com  Kai
-C# 
+
 library(TSP)
 library(doSNOW)
 #library(clues)
